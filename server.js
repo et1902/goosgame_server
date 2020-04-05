@@ -1,21 +1,36 @@
-const express = require('express')
+const Express = require('express')();
+const Http = require('http').Server(Express);
+const Websocket = require('socket.io')(Http);
+const Player = require('./game/player.js')
 
-const app = express()
+var game ={
+	players: [],
+	activeplayer: 1,
+}
 
-app.listen(8000, () => {
-    console.log('Server started!')
-  })
+Websocket.on("connect", (playername) => {
+	console.log("Websocket Event: Player connected!");
+	var player = new Player( playername );
+	socket.emit( player );
+});
 
-app.route('/api/game').get((req, res) => {
-    res.send({
-      //TODO: create new game
-    })
-  })
+Websocket.on("disconnect", socket => {
+	console.log("Websocket Event: Player disconnected!")
+});
 
+Websocket.on("createGame", socket => {
+	console.log("Websocket Event: Game created!")
+});
 
-app.route('/api/game/:gameid').get((req, res) => {
-    res.send({
-      //TODO: join game
-    })
-  })
+Websocket.on("joinGame", socket => {
+	console.log("Websocket Event: Player joined Game!")
+	socket.join( gameId );
+});
 
+Websocket.on("leaveGame", socket => {
+	console.log("Websocket Event: Player leaved Game!")
+});
+
+Http.listen( 3000, () => {	
+	console.log("Listening at Port 3000");
+});
