@@ -29,8 +29,9 @@ Websocket.on("connection", socket => {
 	
 	socket.on("joinGame", (playername, gameId) => {
 		console.log(" Player joined Game!")
+		//var id = socket.id;
 		socket.join( gameId );
-		var player = new Player( playername. socket. );
+		var player = new Player( playername, socket.id  );
 		socket.emit( 'player', player );
 	});
 	
