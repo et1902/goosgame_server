@@ -1,34 +1,42 @@
 const Express = require('express')();
 const Http = require('http').Server(Express);
 const Websocket = require('socket.io')(Http);
-const Player = require('./game/player.js')
+//const Player = require('./game/player.js')
 
-var game ={
-	players: [],
-	activeplayer: 1,
+class Player {
+    
+    constructor(name, id) {
+        this.playerName = name;
+        this.playerId = id;
+    }
 }
 
-Websocket.on("connect", (playername) => {
-	console.log("Websocket Event: Player connected!");
-	var player = new Player( playername );
-	socket.emit( player );
+
+Websocket.on("connect", socket => {
+	console.log("Websocket Event: Player connected!")
 });
 
 Websocket.on("disconnect", socket => {
 	console.log("Websocket Event: Player disconnected!")
 });
 
-Websocket.on("createGame", socket => {
-	console.log("Websocket Event: Game created!")
-});
+Websocket.on("connection", socket => {
+	console.log("Websocket Event:")
 
-Websocket.on("joinGame", socket => {
-	console.log("Websocket Event: Player joined Game!")
-	socket.join( gameId );
-});
-
-Websocket.on("leaveGame", socket => {
-	console.log("Websocket Event: Player leaved Game!")
+	socket.on("createGame", () => {
+		console.log("Game created!")
+	});
+	
+	socket.on("joinGame", (playername, gameId) => {
+		console.log(" Player joined Game!")
+		socket.join( gameId );
+		var player = new Player( playername. socket. );
+		socket.emit( 'player', player );
+	});
+	
+	Websocket.on("leaveGame", () => {
+		console.log(" Player leaved Game!")
+	});
 });
 
 Http.listen( 3000, () => {	
