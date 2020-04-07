@@ -4,6 +4,7 @@ Dependencies:
 - Node.js as runtime enviroment
 - Express as webservice
 - Socket.io as websocket handler
+- lowdb as Database
 
 Instructions:
 
