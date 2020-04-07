@@ -62,21 +62,21 @@ Websocket.on("disconnect", socket => {
 
 Websocket.on("connection", socket => {
 
-	socket.on("createGame", () => {
+	socket.on("CreateGame", () => {
 		var game = new Game( shortid.generate() );
 		db.get('games').push( game ).write();
 
-		socket.emit('game', game );
+		socket.emit('GameCreated', game );
 	});
 
 	
-	socket.on("joinGame", (playername, gameId) => {
+	socket.on("JoinGame", (playername, gameId) => {
 		var player = new Player( playername, socket.id  );
 
 		db.get('games').find({gameId: gameId}).get('players').push(player).write();
 
 		socket.join( gameId );
-		socket.emit( 'game', db.get('games').find({gameId: gameId}).value() );
+		socket.emit( 'Info', db.get('games').find({gameId: gameId}).value() );
 	});
 	
 });
