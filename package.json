@@ -18,9 +18,16 @@
   "homepage": "https://github.com/et1902/goosgame_server#readme",
   "dependencies": {
     "express": "^4.17.1",
+    "lowdb": "^1.0.0",
+    "shortid": "^2.2.15",
     "socket.io": "^2.3.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.2"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "db.json"
+    ]
   }
 }

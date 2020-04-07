@@ -1,6 +1,18 @@
 const Express = require('express')();
 const Http = require('http').Server(Express);
 const Websocket = require('socket.io')(Http);
+
+const low = require('lowdb');
+const FileSync = require('lowdb/adapters/FileSync');
+
+const adapter = new FileSync('db.json');
+const db = low(adapter);
+
+const shortid = require('shortid');
+
+db.defaults({ games: [], players: [], count: 0 })
+  .write()
+
 //const Player = require('./game/player.js')
 
 class Player {
@@ -22,6 +34,7 @@ class Game {
 		this.gameId = id;
 		this.players = [];
 		this.activeplayer;
+		this.created = new Date();
 	}
 
 	next()
@@ -39,9 +52,6 @@ class Game {
 	}
 }
 
-var gamelist = [];
-
-
 Websocket.on("connect", socket => {
 	console.log("Websocket Event: Player connected!")
 });
@@ -51,38 +61,24 @@ Websocket.on("disconnect", socket => {
 });
 
 Websocket.on("connection", socket => {
-	console.log("Websocket Event:")
 
-	socket.on("createGame", (gameId) => {
-		var game = new Game( gameId );
-		gamelist.push(game);
-		socket.emit( 'game', game );
-		console.log("Game created!");
-		console.log(gamelist);
+	socket.on("createGame", () => {
+		var game = new Game( shortid.generate() );
+		db.get('games').push( game ).write();
+
+		socket.emit('game', game );
 	});
+
 	
 	socket.on("joinGame", (playername, gameId) => {
-		var game;
-		for (let i of gamelist)
-		{
-			if( i.gameId == gameId)
-			{
-				game = i;
-				break;
-			}
-		}
 		var player = new Player( playername, socket.id  );
-		game.players.push( player );
-		console.log(" Player joined Game!")
-		//var id = socket.id;
+
+		db.get('games').find({gameId: gameId}).get('players').push(player).write();
+
 		socket.join( gameId );
-		socket.emit( 'player', game );
-		console.log(gamelist);
+		socket.emit( 'game', db.get('games').find({gameId: gameId}).value() );
 	});
 	
-	Websocket.on("leaveGame", () => {
-		console.log(" Player leaved Game!")
-	});
 });
 
 Http.listen( 3000, () => {	
