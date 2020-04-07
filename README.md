@@ -5,4 +5,10 @@ Dependencies:
 - Express as webservice
 - Socket.io as websocket handler
 
+Instructions:
 
+Install dependencies:
+npm install
+
+Start server with automatic reload:
+npm start
