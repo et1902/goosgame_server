@@ -27,20 +27,25 @@ Websocket.on("disconnect", socket => {
 
 Websocket.on("connection", socket => {
 
-	socket.on("CreateGame", () => {
+	socket.on("CreateGame", (playername, gameId) => {
+		//Creates new Game
 		var game = new Game( shortid.generate() );
 		db.get('games').push( game ).write();
-
 		socket.emit('GameCreated', game );
+		//Creates new Player
+		var player = new Player( playername, socket.id  );
+		//Adds the Player to the created Game
+		db.get('games').find({gameId: game.gameId}).get('players').push(player).write();
+		socket.join( game.gameId );
+		socket.emit( 'Info', db.get('games').find({gameId: game.gameId}).value() );
 	});
 
 	
 	socket.on("JoinGame", (playername, gameId) => {
-
+		//Creates new Player
 		var player = new Player( playername, socket.id  );
-
+		//Adds the Player to the Game matching the id
 		db.get('games').find({gameId: gameId}).get('players').push(player).write();
-
 		socket.join( gameId );
 		socket.emit( 'Info', db.get('games').find({gameId: gameId}).value() );
 	});
