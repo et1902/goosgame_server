@@ -57,7 +57,8 @@ Websocket.on("connection", socket => {
 		//Adds the Player to the Game matching the id
 		db.get('games').find({gameId: gameId}).get('players').push(player).write();
 		socket.join( gameId );
-		socket.emit( 'Info', db.get('games').find({gameId: gameId}).value() );
+		socket.emit("Log", "Player " + playername + " joind game " + gameId);
+		socket.emit( 'Info', db.get('games').find({gameId: gameId}).value());
 	});
 	
 });
