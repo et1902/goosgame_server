@@ -13,8 +13,9 @@ const shortid = require('shortid');
 db.defaults({ games: [], players: [], count: 0 })
   .write()
 
-//const Player = require('./game/player.js')
+const Player = require('./game/player.js');
 
+/*
 class Player {
     constructor(name, id) {
         this.playerName = name;
@@ -28,8 +29,10 @@ class Player {
 		this.postion += dice;
 	}
 }
+*/
 
 class Game {
+
 	constructor( id ) {
 		this.gameId = id;
 		this.players = [];
@@ -71,6 +74,7 @@ Websocket.on("connection", socket => {
 
 	
 	socket.on("JoinGame", (playername, gameId) => {
+
 		var player = new Player( playername, socket.id  );
 
 		db.get('games').find({gameId: gameId}).get('players').push(player).write();
