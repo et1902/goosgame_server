@@ -1,10 +1,23 @@
 module.exports = class game{
-	gameId;
-	players;
-	activePlayer;
+	constructor( id ) {
+		this.gameId = id;
+		this.players = [];
+		this.activeplayer;
+		this.created = new Date();
+		console.info("Created new Game with id: " + id)
+	}
 
-	static createGame()
+	next()
 	{
-		return new Game();
-	};
+		if( activeplayer == this.players.length() )
+		{
+			activeplayer = 0;
+		}
+		else
+		{
+			++activeplayer;
+		}
+
+		this.players[activeplayer].throwDice();
+	}
 }

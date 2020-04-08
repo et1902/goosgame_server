@@ -14,46 +14,8 @@ db.defaults({ games: [], players: [], count: 0 })
   .write()
 
 const Player = require('./game/player.js');
+const Game = require('./game/game.js');
 
-/*
-class Player {
-    constructor(name, id) {
-        this.playerName = name;
-		this.playerId = id;
-		this.position = 0;
-	}
-
-	throwDice()
-	{
-		var dice = 1 + Math.floor(Math.random()*6);
-		this.postion += dice;
-	}
-}
-*/
-
-class Game {
-
-	constructor( id ) {
-		this.gameId = id;
-		this.players = [];
-		this.activeplayer;
-		this.created = new Date();
-	}
-
-	next()
-	{
-		if( activeplayer == this.players.length() )
-		{
-			activeplayer = 0;
-		}
-		else
-		{
-			++activeplayer;
-		}
-
-		this.players[activeplayer].throwDice();
-	}
-}
 
 Websocket.on("connect", socket => {
 	console.log("Websocket Event: Player connected!")
