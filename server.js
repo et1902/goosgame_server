@@ -27,21 +27,31 @@ Websocket.on("disconnect", socket => {
 
 Websocket.on("connection", socket => {
 
-	socket.on("CreateGame", (playername, gameId) => {
+	socket.on("CreateGame", playername => {
+		if((playername == null)||(playername == "")) {
+			socket.emit('MissingNameField', playername);
+			return null;
+		}
 		//Creates new Game
 		var game = new Game( shortid.generate() );
 		db.get('games').push( game ).write();
-		socket.emit('GameCreated', game );
 		//Creates new Player
 		var player = new Player( playername, socket.id  );
 		//Adds the Player to the created Game
 		db.get('games').find({gameId: game.gameId}).get('players').push(player).write();
 		socket.join( game.gameId );
-		socket.emit( 'Info', db.get('games').find({gameId: game.gameId}).value() );
+		socket.emit( 'GameCreated', db.get('games').find({gameId: game.gameId}).value() );
 	});
 
 	
 	socket.on("JoinGame", (playername, gameId) => {
+		if((playername == null)||(playername == "")) {
+			socket.emit('MissingNameField', playername);
+			return null;
+		} else if((gameId == null)||(gameId == "")) {
+			socket.emit('MissingIdField', gameId);
+			return null;
+		}
 		//Creates new Player
 		var player = new Player( playername, socket.id  );
 		//Adds the Player to the Game matching the id
