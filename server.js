@@ -32,32 +32,32 @@ Websocket.on("connection", socket => {
 			socket.emit('MissingNameField', playername);
 			return null;
 		}
-		//Creates new Game
-		var game = new Game( shortid.generate() );
-		db.get('games').push( game ).write();
-		//Creates new Player
-		var player = new Player( playername, socket.id  );
-		//Adds the Player to the created Game
-		db.get('games').find({gameId: game.gameId}).get('players').push(player).write();
-		socket.join( game.gameId );
+		var game = createGame(player);
+		var player = createPlayer(playername, socket.id);
+		addPlayerToGame(player, game.gameId, socket)
+
 		socket.emit( 'GameCreated', db.get('games').find({gameId: game.gameId}).value() );
 	});
 
 	
 	socket.on("JoinGame", (playername, gameId) => {
+		socket.emit('Log', db.get('games').find({gameId: gameId}));
 		if((playername == null)||(playername == "")) {
 			socket.emit('MissingNameField', playername);
 			return null;
 		} else if((gameId == null)||(gameId == "")) {
 			socket.emit('MissingIdField', gameId);
 			return null;
+		} else if(db.get('games').find({gameId: gameId}) == null) {
+			//Todo fix
+			socket.emit('MissingIdField', (gameId, 'Game not found!'));
+			return null;
 		}
-		//Creates new Player
-		var player = new Player( playername, socket.id  );
-		//Adds the Player to the Game matching the id
-		db.get('games').find({gameId: gameId}).get('players').push(player).write();
-		socket.join( gameId );
-		socket.emit("Log", "Player " + playername + " joind game " + gameId);
+
+		var player = createPlayer(playername, socket.id);
+		addPlayerToGame(player, gameId, socket);
+		
+		socket.emit('Log', "Player " + playername + " joind game " + gameId);
 		socket.emit( 'Info', db.get('games').find({gameId: gameId}).value());
 	});
 	
@@ -66,3 +66,20 @@ Websocket.on("connection", socket => {
 Http.listen( 3000, () => {	
 	console.log("Listening at Port 3000");
 });
+
+function addPlayerToGame(player, gameId, socket) {
+	//TODO check if player name already in use?
+	db.get('games').find({gameId: gameId}).get('players').push(player).write();
+	socket.join( gameId );
+}
+
+function createGame() {
+	var game = new Game( shortid.generate() );
+	db.get('games').push( game ).write();
+	return game;
+}
+
+function createPlayer(playername,id ) {
+	//Use socketId as the player id
+	return new Player( playername, id );
+}
