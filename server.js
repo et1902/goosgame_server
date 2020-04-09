@@ -32,9 +32,9 @@ Websocket.on("connection", socket => {
 			socket.emit('MissingNameField', playername);
 			return null;
 		}
-		var game = createGame(player);
-		var player = createPlayer(playername, socket.id);
-		addPlayerToGame(player, game.gameId, socket)
+		var game = createGame();
+		var newGuy = createPlayer(playername, socket.id);
+		addPlayerToGame(newGuy, game.gameId, socket)
 
 		socket.emit( 'GameCreated', db.get('games').find({gameId: game.gameId}).value() );
 	});
@@ -69,6 +69,8 @@ Http.listen( 3000, () => {
 
 function addPlayerToGame(player, gameId, socket) {
 	//TODO check if player name already in use?
+	var players = db.get('games').find({gameId: gameId}).get('players')
+
 	db.get('games').find({gameId: gameId}).get('players').push(player).write();
 	socket.join( gameId );
 }
