@@ -37,7 +37,26 @@ Websocket.on("connection", socket => {
 		callback( responseData );
 	});
 
-	
+	socket.on('JoinGame', function(data, callback) {
+		console.log('Recieved JoinGame');
+		try {
+		var ID = data.gameID;
+		var name = data.playername;
+		}
+		catch (e)
+		{
+			console.log('Exception thrown: ' + e.message);
+			callback( e.message );
+		}
+
+		var player = createPlayer(name, socket.id);
+		var game = addPlayerToGame(player, ID, socket);
+		callback( game );
+	});
+
+
+
+	/*
 	socket.on("JoinGame", (playername, gameId) => {
 		socket.emit('Log', db.get('games').find({gameId: gameId}));
 		if((playername == null)||(playername == "")) {
@@ -57,7 +76,7 @@ Websocket.on("connection", socket => {
 		
 		socket.emit('Log', "Player " + playername + " joind game " + gameId);
 		socket.emit( 'Info', db.get('games').find({gameId: gameId}).value());
-	});
+	});*/
 	
 });
 
@@ -71,6 +90,7 @@ function addPlayerToGame(player, gameId, socket) {
 
 	db.get('games').find({gameId: gameId}).get('players').push(player).write();
 	socket.join( gameId );
+	return db.get('games').find({gameId: gameId}).value();
 }
 
 function createGame() {
