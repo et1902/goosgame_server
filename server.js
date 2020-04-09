@@ -27,16 +27,14 @@ Websocket.on("disconnect", socket => {
 
 Websocket.on("connection", socket => {
 
-	socket.on("CreateGame", playername => {
-		if((playername == null)||(playername == "")) {
-			socket.emit('MissingNameField', playername);
-			return null;
-		}
+	socket.on("CreateGame", function(data, callback) {
 		var game = createGame();
-		var newGuy = createPlayer(playername, socket.id);
-		addPlayerToGame(newGuy, game.gameId, socket)
 
-		socket.emit( 'GameCreated', db.get('games').find({gameId: game.gameId}).value() );
+		db.get('games').push( game ).write();
+
+		var responseData = game.gameId;
+
+		callback( responseData );
 	});
 
 	
