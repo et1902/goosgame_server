@@ -34,4 +34,8 @@ module.exports = class game{
 	addPlayer(player) {
 		this.players.push(player);
 	}
+
+	getActivePlayer() {
+		return this.players[this.activeplayer]
+	}
 }
