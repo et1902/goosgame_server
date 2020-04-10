@@ -3,6 +3,8 @@ const FileSync = require('lowdb/adapters/FileSync');
 const adapter = new FileSync('db.json');
 const db = low(adapter);
 
+const shortid = require('shortid');
+
 const Board = require('./board.js');
 
 module.exports = class game{
@@ -14,6 +16,38 @@ module.exports = class game{
 		this.board = new Board(69);
 		console.info("Created new Game with id: " + id);
 	}
+
+	//////////////////////////////////////////////////////
+	/*				object helper methods				*/
+	//////////////////////////////////////////////////////
+
+	static new()
+	{
+		var game = new this( shortid.generate() );
+		db.get('games').push( game ).write();
+		return game;
+	}
+
+	static getFromDb( gameID)
+	{
+		var game = db.get('games').find({gameID: gameID}).value();
+		var rv = new this( game.gameID );
+		rv.players = game.players;
+		rv.activeplayer = game.activeplayer;
+		rv.created = game.created;
+		rv.board = game.board;
+
+		return rv;
+	} 
+
+	saveToDb()
+	{
+		db.get('games').find({gameId: this.gameId}).assign( this ).write();
+	}
+
+	//////////////////////////////////////////////////////
+	/*				game helper methods					*/
+	//////////////////////////////////////////////////////
 
 	next()
 	{
@@ -39,19 +73,13 @@ module.exports = class game{
 	addPlayer(player) {
 		this.players.push(player);
 		this.saveToDb();
+
+		return this;
 	}
 
 	getActivePlayer() {
 		return this.players[this.activeplayer]
 	}
 	
-	static getFromDb( gameID)
-	{
-		return db.get('games').find({gameID: gameID}).value();
-	} 
 
-	saveToDb()
-	{
-		db.get('games').find({gameId: this.gameId}).assign( this ).write();
-	}
 }

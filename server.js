@@ -22,18 +22,14 @@ Websocket.on("connect", socket => {
 Websocket.on("connection", socket => {
 
 	socket.on("CreateGame", function(data, callback) {
-		var game = createGame();
-
-		console.log("Number of total Games: " + db.get('games').size().value());
-
-		callback( game.gameId );
+		callback(  Game.new().gameID );
 	});
 
 	socket.on('JoinGame', function(data, callback) {
 		console.log('Recieved JoinGame');
 		try {
-		var ID = data.gameID;
-		var name = data.playername;
+			var ID = data.gameID;
+			var name = data.playername;
 		}
 		catch (e)
 		{
@@ -41,10 +37,9 @@ Websocket.on("connection", socket => {
 			callback( e.message );
 		}
 
-		
+		var game = Game.getFromDb( ID );
+		game.addPlayer( createPlayer(name, socket.id) );
 
-		var player = createPlayer(name, socket.id);
-		var game = addPlayerToGame(player, ID, socket);
 		callback( game );
 	});
 
