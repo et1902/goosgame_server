@@ -5,7 +5,7 @@ const db = low(adapter);
 
 const shortid = require('shortid');
 
-const Board = require('./board.js');
+const gameBoard = require('./gameboard.js');
 
 module.exports = class game{
 	constructor( id ) {
@@ -13,7 +13,7 @@ module.exports = class game{
 		this.players = [];
 		this.activeplayer = 0;
 		this.created = new Date();
-		this.board = new Board(69);
+		this.gameBoard = new gameBoard(69);
 		console.info("Created new Game with id: " + id);
 	}
 
@@ -42,7 +42,7 @@ module.exports = class game{
 		rv.players = game.players;
 		rv.activeplayer = game.activeplayer;
 		rv.created = game.created;
-		rv.board = game.board;
+		rv.gameBoard = game.gameBoard;
 
 		return rv;
 	} 
