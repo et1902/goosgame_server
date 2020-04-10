@@ -1,8 +1,8 @@
-module.exports = class gameBoardField{
+module.exports = class GameBoardField{
     constructor(pos) {
         this.position = pos;
         this.description;
-        this.action
+        this.action;
 
         console.log("Created new boardField with total Fileds: " + this.numberOfFields);
     }
