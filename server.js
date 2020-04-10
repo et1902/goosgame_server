@@ -4,14 +4,12 @@ const Websocket = require('socket.io')(Http);
 
 const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
-
 const adapter = new FileSync('db.json');
 const db = low(adapter);
+db.defaults({ games: [] }).write()
 
 const shortid = require('shortid');
 
-db.defaults({ games: [], players: [], count: 0 })
-  .write()
 
 const Player = require('./game/player.js');
 const Game = require('./game/game.js');
@@ -19,10 +17,6 @@ const Game = require('./game/game.js');
 
 Websocket.on("connect", socket => {
 	console.log("Websocket Event: Player connected!")
-});
-
-Websocket.on("disconnect", socket => {
-	console.log("Websocket Event: Player disconnected!")
 });
 
 Websocket.on("connection", socket => {
@@ -47,6 +41,8 @@ Websocket.on("connection", socket => {
 			callback( e.message );
 		}
 
+		
+
 		var player = createPlayer(name, socket.id);
 		var game = addPlayerToGame(player, ID, socket);
 		callback( game );
@@ -58,6 +54,7 @@ Websocket.on("connection", socket => {
 
 	socket.on('ThrowDice', function(data, callback) {
 		var playerID = socket.id;
+
 		var rv= 1;
 		console.log('Throwing dice for player ' + playerID);
 

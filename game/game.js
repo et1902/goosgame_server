@@ -1,8 +1,13 @@
+const low = require('lowdb');
+const FileSync = require('lowdb/adapters/FileSync');
+const adapter = new FileSync('db.json');
+const db = low(adapter);
+
 const Board = require('./board.js');
 
 module.exports = class game{
 	constructor( id ) {
-		this.gameId = id;
+		this.gameID= id;
 		this.players = [];
 		this.activeplayer = 0;
 		this.created = new Date();
@@ -33,9 +38,20 @@ module.exports = class game{
 
 	addPlayer(player) {
 		this.players.push(player);
+		this.saveToDb();
 	}
 
 	getActivePlayer() {
 		return this.players[this.activeplayer]
+	}
+	
+	static getFromDb( gameID)
+	{
+		return db.get('games').find({gameID: gameID}).value();
+	} 
+
+	saveToDb()
+	{
+		db.get('games').find({gameId: this.gameId}).assign( this ).write();
 	}
 }
