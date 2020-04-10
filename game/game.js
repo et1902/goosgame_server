@@ -62,12 +62,11 @@ module.exports = class game{
 	 */
 	nextTurn(){
 		this.nextPlayer()
-		if(!this.getActivePlayer().isFree()) {
-			return
+		if(this.getActivePlayer().canMove()) {
+			var movement = this.throwDice();
+			this.movePlayer(movement);
+			this.performActions();
 		}
-		var movement = this.throwDice();
-		this.movePlayer(movement);
-		this.performActions();
 	}
 
 
@@ -88,22 +87,30 @@ module.exports = class game{
 		if(action.waitForPlayersToPass && !isLast() ){
 			//Do Nothng
 			//activePlayer.setAction(new Action(true, 0, false, 0));
+			return;
 		}else if(action.playermovement != 0) {
+			//Move player position
 			activePlayer.move(action.playermovement);
-			activePlayer.clearAction();
-
 		}else if(action.reroll == true) {
-			//Do reroll i guess??????
-			console.info("You did a reroll! Trust me, i am a console!")
+			//Clear action, throw dice, move player and start over
 			activePlayer.clearAction();
+			var movement = this.throwDice();
+			this.movePlayer(movement);
+			//recursion if you keep hitting action fields
+			//Do we need to save to DB here?!
+			this.performActions();
+			console.info("You did a reroll! Trust me, i'm a console!")
 		} else if (action.skipTurns != 0) {
-			activePlayer.setAction(new Action(false, 0, false, skipTurns - 1));
+			activePlayer.getAction().turnWaited();
+			return;
 		}
+		activePlayer.clearAction();
 		saveToDb();	
 	}
 
 	movePlayer(amount){
 		this.getActivePlayer().move(amount);
+		//gives the action of the new field to the player
 		var action = gameBoard.getFieldAt(this.getActivePlayer().position).getAction();
 		this.getActivePlayer().setAction(action);
 	}
@@ -119,8 +126,7 @@ module.exports = class game{
 		return isLast;
 	}
 
-	throwDice()
-	{
+	throwDice(){
 		var dice = 1 + Math.floor(Math.random()*6);
 		return dice;
 	}
