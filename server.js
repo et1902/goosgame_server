@@ -28,8 +28,8 @@ Websocket.on("connection", socket => {
 	socket.on('JoinGame', function(data, callback) {
 		console.log('Recieved JoinGame');
 		try {
-			var ID = data.gameID;
-			var name = data.playername;
+		var gameID = data.gameID;
+		var name = data.playername;
 		}
 		catch (e)
 		{
@@ -37,7 +37,7 @@ Websocket.on("connection", socket => {
 			callback( e.message );
 		}
 
-		var game = Game.getFromDb( ID );
+		var game = Game.getFromDb( gameID );
 		game.addPlayer( createPlayer(name, socket.id) );
 
 		callback( game );
@@ -99,16 +99,14 @@ Http.listen( 3000, () => {
 
 function addPlayerToGame(player, gameId, socket) {
 	//TODO check if player name already in use?
-	var players = db.get('games').find({gameId: gameId}).get('players')
 
-	db.get('games').find({gameId: gameId}).get('players').push(player).write();
 	socket.join( gameId );
 	return db.get('games').find({gameId: gameId}).value();
 }
 
 function createGame() {
 	var game = new Game( shortid.generate() );
-	db.get('games').push( game ).write();
+	game.saveToDb();
 	return game;
 }
 
