@@ -30,8 +30,7 @@ Websocket.on("connection", socket => {
 	socket.on("CreateGame", function(data, callback) {
 		var game = createGame();
 
-		db.get('games').push( game ).write();
-
+		console.log("Number of total Games: " + db.get('games').size().value());
 		var responseData = game.gameId;
 
 		callback( responseData );
