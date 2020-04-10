@@ -1,9 +1,26 @@
 module.exports = class gameBoardField{
-    constructor(size) {
-        this.numberOfFields = size;
+    constructor(pos) {
+        this.position = pos;
+        this.description;
+        this.action
 
-        console.log("Created new board with total Fileds: " + this.numberOfFields);
+        console.log("Created new boardField with total Fileds: " + this.numberOfFields);
     }
 
+    setDescription(desc) {
+        this.description = desc;
+    }
+
+    setAction(ac) {
+        this.action = ac;
+    }
+
+    getAction() {
+        return this.action;
+    }
+
+    getPosition() {
+        return this.position;
+    }
     
 }
