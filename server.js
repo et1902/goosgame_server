@@ -32,7 +32,7 @@ Websocket.on("connection", socket => {
 	socket.on('JoinGame', function(data, callback) {
 		console.log('Recieved JoinGame');
 		try {
-		var ID = data.gameID;
+		var gameID = data.gameID;
 		var name = data.playername;
 		}
 		catch (e)
@@ -44,7 +44,7 @@ Websocket.on("connection", socket => {
 		
 
 		var player = createPlayer(name, socket.id);
-		var game = addPlayerToGame(player, ID, socket);
+		var game = addPlayerToGame(player, gameID, socket);
 		callback( game );
 	});
 
@@ -104,16 +104,14 @@ Http.listen( 3000, () => {
 
 function addPlayerToGame(player, gameId, socket) {
 	//TODO check if player name already in use?
-	var players = db.get('games').find({gameId: gameId}).get('players')
 
-	db.get('games').find({gameId: gameId}).get('players').push(player).write();
 	socket.join( gameId );
 	return db.get('games').find({gameId: gameId}).value();
 }
 
 function createGame() {
 	var game = new Game( shortid.generate() );
-	db.get('games').push( game ).write();
+	game.saveToDb();
 	return game;
 }
 
