@@ -31,9 +31,8 @@ Websocket.on("connection", socket => {
 		var game = createGame();
 
 		console.log("Number of total Games: " + db.get('games').size().value());
-		var responseData = game.gameId;
 
-		callback( responseData );
+		callback( game.gameId );
 	});
 
 	socket.on('JoinGame', function(data, callback) {
@@ -58,9 +57,23 @@ Websocket.on("connection", socket => {
 	});
 
 	socket.on('ThrowDice', function(data, callback) {
-		console.log('Throwing dice for player');
-		callback('12');
+		var playerID = socket.id;
+		var rv= 1;
+		console.log('Throwing dice for player ' + playerID);
+
+		callback( rv );
 	});
+
+	socket.on('NextPlayer', function(data, callback) {
+		
+		callback();
+	});
+
+	socket.on('LeaveGame', function(data, callback) {
+
+	});
+
+
 
 
 
