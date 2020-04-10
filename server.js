@@ -54,6 +54,15 @@ Websocket.on("connection", socket => {
 		callback( game );
 	});
 
+	socket.on('StartGame', function(data, callback) {
+		callback();
+	});
+
+	socket.on('ThrowDice', function(data, callback) {
+		console.log('Throwing dice for player');
+		callback('12');
+	});
+
 
 
 	/*
