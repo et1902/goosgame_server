@@ -30,7 +30,14 @@ module.exports = class game{
 
 	static getFromDb( gameID)
 	{
-		var game = db.get('games').find({gameID: gameID}).value();
+		var game;
+		if(! db.get('games').has(gameID).value()) {
+			game = new this(gameID);
+			console.info('Created new game. Given gameId could not be found:' + gameID);
+		} else {
+			game = db.get('games').find({gameID: gameID}).value();
+		}
+
 		var rv = new this( game.gameID );
 		rv.players = game.players;
 		rv.activeplayer = game.activeplayer;
