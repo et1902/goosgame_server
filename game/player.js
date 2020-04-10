@@ -9,19 +9,29 @@ module.exports = class Player {
     }
 
     isFree(){
-        return (this.actionToDo == null)
+        var isFree = false;
+        if (this.actionToDo == null) {
+            isFree = true;
+        } else if (this.actionToDo.skipTurns != 0) {
+            isFree = false;
+        }
+        return isFree;
+    }
+
+    clearAction() {
+        this.actionToDo = null;
     }
 
     setAction(action) {
-        if (this.isFree()) {
-            this.actionToDo = action;
-        } else {
-            console.error("Player isnt free! Do your action first")
-        }
+        this.actionToDo = action;
     }
 
     getAction() {
         return this.actionToDo;
+    }
+
+    move(amount) {
+        this.position += amount;
     }
 
 
