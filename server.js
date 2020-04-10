@@ -10,7 +10,6 @@ db.defaults({ games: [] }).write()
 
 const shortid = require('shortid');
 
-
 const Player = require('./game/player.js');
 const Game = require('./game/game.js');
 
@@ -21,6 +20,10 @@ Websocket.on("connect", socket => {
 
 Websocket.on("connection", socket => {
 
+	socket.on('GenID', function(data, callback) {
+		callback( shortid.generate() );
+	});
+
 	socket.on("CreateGame", function(data, callback) {
 		callback(  Game.new().gameID );
 	});
@@ -28,19 +31,19 @@ Websocket.on("connection", socket => {
 	socket.on('JoinGame', function(data, callback) {
 		console.log('Recieved JoinGame');
 		try {
-		var gameID = data.gameID;
-		var name = data.playername;
+			var gameID = data.gameID;
+			var name = data.playername;		
+
+			var game = Game.getFromDb( gameID );
+			game.addPlayer( createPlayer(name, socket.id) );
+		
+			callback( game );
 		}
 		catch (e)
 		{
 			console.log('Exception thrown: ' + e.message);
 			callback( e.message );
 		}
-
-		var game = Game.getFromDb( gameID );
-		game.addPlayer( createPlayer(name, socket.id) );
-
-		callback( game );
 	});
 
 	socket.on('StartGame', function(data, callback) {
