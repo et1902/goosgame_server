@@ -5,7 +5,8 @@ const db = low(adapter);
 
 const shortid = require('shortid');
 
-const gameBoard = require('./gameboard.js');
+const GameBoard = require('./gameboard.js');
+const Action = require('./action.js');
 
 module.exports = class game{
 	
@@ -14,7 +15,7 @@ module.exports = class game{
 		this.players = [];
 		this.activeplayer = 0;
 		this.created = new Date();
-		this.gameBoard = new gameBoard(69);
+		this.gameBoard = new GameBoard(69);
 		this.createdBy;
 		this.stateMode = {
 			open: 1,
@@ -60,25 +61,78 @@ module.exports = class game{
 	/*				game helper methods					*/
 	//////////////////////////////////////////////////////
 
-	next()
-	{
-		if( this.activeplayer == this.players.length )
-		{
-			activeplayer = 0;
+	/**
+	 * Main function for playing
+	 */
+	nextTurn(){
+		this.nextPlayer()
+		if(this.getActivePlayer().canMove()) {
+			var movement = this.throwDice();
+			this.movePlayer(movement);
+			this.performActions();
 		}
-		else
-		{
-			++activeplayer;
-		}
-
-		throwDice();
 	}
 
-	throwDice()
+
+	nextPlayer()
 	{
+		if( this.activeplayer == this.players.length ) {
+			activeplayer = 0;
+		} else {
+			++activeplayer;
+		}
+		saveToDb();
+	}
+
+	performActions(){
+		var activePlayer = this.getActivePlayer();
+		var action = activePlayer.getAction();
+
+		if(action.waitForPlayersToPass && !isLast() ){
+			//Do Nothng
+			//activePlayer.setAction(new Action(true, 0, false, 0));
+			return;
+		}else if(action.playermovement != 0) {
+			//Move player position
+			activePlayer.move(action.playermovement);
+		}else if(action.reroll == true) {
+			//Clear action, throw dice, move player and start over
+			activePlayer.clearAction();
+			var movement = this.throwDice();
+			this.movePlayer(movement);
+			//recursion if you keep hitting action fields
+			//Do we need to save to DB here?!
+			this.performActions();
+			console.info("You did a reroll! Trust me, i'm a console!")
+		} else if (action.skipTurns != 0) {
+			activePlayer.getAction().turnWaited();
+			return;
+		}
+		activePlayer.clearAction();
+		saveToDb();	
+	}
+
+	movePlayer(amount){
+		this.getActivePlayer().move(amount);
+		//gives the action of the new field to the player
+		var action = gameBoard.getFieldAt(this.getActivePlayer().position).getAction();
+		this.getActivePlayer().setAction(action);
+	}
+
+
+	isPlayerLast(theGuy) {
+		var isLast = true;
+		players.array.forEach(element => {
+			if(element.position < theGuy.position) {
+				isLast = false;
+			}
+		});
+		return isLast;
+	}
+
+	throwDice(){
 		var dice = 1 + Math.floor(Math.random()*6);
-		this.players[activeplayer].postion += dice;
-		console.info("Player " + thisplayers[activeplayer].playerName + " roled a " + dice + "and moved to field " + this.players[activeplayer].postion)
+		return dice;
 	}
 
 	addPlayer( player ) {
@@ -98,9 +152,12 @@ module.exports = class game{
 		return 'Game already started! No join possible!';
 	}
 
-	getActivePlayer() {
+
+  	/**
+ 	 * Returns the activePlayer Object
+ 	 */	
+	 getActivePlayer() {
 		return this.players[this.activeplayer]
 	}
-	
 
 }
