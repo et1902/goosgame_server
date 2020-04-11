@@ -6,17 +6,12 @@ const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
 const adapter = new FileSync('db.json');
 const db = low(adapter);
-db.defaults({ games: [] }).write()
+db.defaults({ clients: [], games: [] }).write()
 
 const shortid = require('shortid');
 
 const Player = require('./game/player.js');
 const Game = require('./game/game.js');
-
-
-Websocket.on("connect", socket => {
-	console.log("Websocket Event: Player connected!")
-});
 
 Websocket.on("connection", socket => {
 
@@ -25,28 +20,57 @@ Websocket.on("connection", socket => {
 	});
 
 	socket.on("CreateGame", function(data, callback) {
-		callback(  Game.new().gameID );
+		var game = Game.new()
+		try {
+			var game = Game.getFromDb( game.gameID );
+			callback( game.gameID );
+		}
+		catch(e)
+		{
+			console.log('Exception thrown: ' + e.message);
+			callback('Exception thrown: '+  e.message );
+		}
 	});
 
 	socket.on('JoinGame', function(data, callback) {
 		console.log('Recieved JoinGame');
 		try {
-			var gameID = data.gameID;
-			var name = data.playername;		
+			const gameID = data.gameID;
+			const playerID = data.playerID;
+			const playername = data.playername;
 
 			var game = Game.getFromDb( gameID );
-			game.addPlayer( createPlayer(name, socket.id) );
+			var err = game.addPlayer( new Player( playername, playerID) );
 		
-			callback( game );
+			callback( err );
 		}
 		catch (e)
 		{
 			console.log('Exception thrown: ' + e.message);
-			callback( e.message );
+			callback('Exception thrown: ' + e.message );
+		}
+	});
+
+	socket.on('RegisterSocketEndpoint', function(data, callback) {
+		const playerID = data.playerID;
+		const socketID = data.socketID;
+		
+		if( db.get('clients').find({playerID: playerID}) )
+		{
+			console.log('Changing Socketendpoint for ' + playerID);
+			db.get('clients').find({playerID: playerID}).get('socketID').assign( socketID ).write();
+		}
+		else
+		{
+			console.log('Adding new Socketendpoint for ' + playerID);
+			db.get('clients').push({playerID: playerID, socketID: socketID}).write();
 		}
 	});
 
 	socket.on('StartGame', function(data, callback) {
+		var game  = Game.getFromDb( data.gameID );
+		game.state = game.stateMode.started;
+		game.saveToDb();
 		callback();
 	});
 

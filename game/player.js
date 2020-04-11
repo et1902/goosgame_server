@@ -5,6 +5,7 @@ module.exports = class Player {
         this.playerId = id;
         this.position = 0
         this.actionToDo = null;
+        this.socketID;
         console.info("Created new Player:" + name + " with id: " + id)
     }
 

@@ -8,13 +8,20 @@ const shortid = require('shortid');
 const gameBoard = require('./gameboard.js');
 
 module.exports = class game{
+	
 	constructor( id ) {
 		this.gameID= id;
 		this.players = [];
 		this.activeplayer = 0;
 		this.created = new Date();
 		this.gameBoard = new gameBoard(69);
-		console.info("Created new Game with id: " + id);
+		this.createdBy;
+		this.stateMode = {
+			open: 1,
+			started: 5,
+			finished: 10
+		  };
+		this.state = this.stateMode.open;
 	}
 
 	//////////////////////////////////////////////////////
@@ -25,31 +32,28 @@ module.exports = class game{
 	{
 		var game = new this( shortid.generate() );
 		db.get('games').push( game ).write();
+		console.info("Created new Game with ID: " + game.gameID);
 		return game;
 	}
 
-	static getFromDb( gameID)
+	static getFromDb( gameID )
 	{
-		var game;
-		if(! db.get('games').has(gameID).value()) {
-			game = new this(gameID);
-			console.info('Created new game. Given gameId could not be found:' + gameID);
-		} else {
-			game = db.get('games').find({gameID: gameID}).value();
-		}
+		var game = db.get('games').find({gameID: gameID}).value();
 
 		var rv = new this( game.gameID );
 		rv.players = game.players;
 		rv.activeplayer = game.activeplayer;
 		rv.created = game.created;
 		rv.gameBoard = game.gameBoard;
+		console.log('Fetched new game object of ' + rv.gameID + ' from database');
 
 		return rv;
 	} 
 
 	saveToDb()
 	{
-		db.get('games').find({gameId: this.gameId}).assign( this ).write();
+		db.get('games').find({gameID: this.gameID}).assign( this ).write();
+		console.log('Saved game ' + this.gameID +' to database')
 	}
 
 	//////////////////////////////////////////////////////
@@ -77,11 +81,21 @@ module.exports = class game{
 		console.info("Player " + thisplayers[activeplayer].playerName + " roled a " + dice + "and moved to field " + this.players[activeplayer].postion)
 	}
 
-	addPlayer(player) {
-		this.players.push(player);
-		this.saveToDb();
-
-		return this;
+	addPlayer( player ) {
+		if( this.state == this.stateMode.open)
+		{
+			if( db.get('games').find({gameID: this.gameID}).get('players').find({playerID: player.playerID}).value() )
+			{
+				console.log('Player already joined game!')
+				return "Player already joined game!";
+			
+			}
+			this.players = [player];
+			this.saveToDb();
+			return this;
+		}
+		console.log('Game already started! No join possible!');
+		return 'Game already started! No join possible!';
 	}
 
 	getActivePlayer() {
