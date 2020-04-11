@@ -87,6 +87,7 @@ Websocket.on("connection", socket => {
 		game.state = game.stateMode.started;
 		game.saveToDb();
 		callback();
+		socket.emit("GameUpdate", game );
 	});
 
 	socket.on('ThrowDice', function(data, callback) {
