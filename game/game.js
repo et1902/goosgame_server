@@ -145,7 +145,7 @@ module.exports = class game{
 				return "Player already joined game!";
 			
 			}
-			this.players = [player];
+			this.players.push(player);
 			this.saveToDb();
 			return this;
 		}
