@@ -27,7 +27,8 @@
   },
   "nodemonConfig": {
     "ignore": [
-      "db.json"
+      "db_server.json",
+      "db_games.json"
     ]
   }
 }

@@ -4,7 +4,7 @@ const Websocket = require('socket.io')(Http);
 
 const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
-const adapter = new FileSync('db.json');
+const adapter = new FileSync('db_server.json');
 const db = low(adapter);
 db.defaults({ clients: [], games: [] }).write()
 
@@ -53,22 +53,37 @@ Websocket.on("connection", socket => {
 
 	socket.on('RegisterSocketEndpoint', function(data, callback) {
 		const playerID = data.playerID;
-		const socketID = data.socketID;
+		const gameID = data.gameID;
+		const socketID = socket.id;
 		
-		if( db.get('clients').find({playerID: playerID}) )
+		if( db.get('clients').find({playerID: playerID}).value() 
+			&& db.get('clients').find({playerID: playerID}).get('gameID').value() == gameID 
+		)
 		{
 			console.log('Changing Socketendpoint for ' + playerID);
 			db.get('clients').find({playerID: playerID}).get('socketID').assign( socketID ).write();
 		}
+		else if( db.get('clients').find({playerID: playerID}).value() && db.get('clients').find({playerID: playerID}).get('gameID').value() != '')
+		{
+			console.log('Player tries to join other game, but is still in running game! Returning running gameID');
+			callback( db.get('clients').find({playerID: playerID}).get('gameID').value() );
+		} 
+		else if( db.get('clients').find({playerID: playerID}).get('gameID').value() == '' )
+		{
+			db.get('clients').find({playerID: playerID}).get('gameID').assign( gameID ).write();
+		} 
 		else
 		{
 			console.log('Adding new Socketendpoint for ' + playerID);
-			db.get('clients').push({playerID: playerID, socketID: socketID}).write();
+			db.get('clients').push( {playerID: playerID, socketID: socketID, gameID: gameID}).write();
 		}
+
+		//send initial GameUpdate to Client
+		socket.emit("GameUpdate", Game.getFromDb(gameID) );
 	});
 
 	socket.on('StartGame', function(data, callback) {
-		var game  = Game.getFromDb( data.gameID );
+		var game  = Game.getFromDb( data );
 		game.state = game.stateMode.started;
 		game.saveToDb();
 		callback();
@@ -89,6 +104,9 @@ Websocket.on("connection", socket => {
 	});
 
 	socket.on('LeaveGame', function(data, callback) {
+		console.log('Player ' + ' left game ' );
+		db.get('clients').find({playerID: data}).assign({gameID: ''}).write()
+		callback();
 
 	});
 
@@ -123,21 +141,3 @@ Websocket.on("connection", socket => {
 Http.listen( 3000, () => {	
 	console.log("Listening at Port 3000");
 });
-
-function addPlayerToGame(player, gameId, socket) {
-	//TODO check if player name already in use?
-
-	socket.join( gameId );
-	return db.get('games').find({gameId: gameId}).value();
-}
-
-function createGame() {
-	var game = new Game( shortid.generate() );
-	game.saveToDb();
-	return game;
-}
-
-function createPlayer(playername,id ) {
-	//Use socketId as the player id
-	return new Player( playername, id );
-}

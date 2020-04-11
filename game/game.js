@@ -1,7 +1,8 @@
 const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
-const adapter = new FileSync('db.json');
+const adapter = new FileSync('db_games.json');
 const db = low(adapter);
+db.defaults({ clients: [], games: [] }).write()
 
 const shortid = require('shortid');
 
@@ -45,7 +46,7 @@ module.exports = class game{
 		rv.players = game.players;
 		rv.activeplayer = game.activeplayer;
 		rv.created = game.created;
-		rv.gameBoard = game.gameBoard;
+		rv.gameboard = game.gameBoard;
 		console.log('Fetched new game object of ' + rv.gameID + ' from database');
 
 		return rv;
