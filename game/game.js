@@ -16,7 +16,7 @@ module.exports = class game{
 		this.players = [];
 		this.activeplayer = 0;
 		this.created = new Date();
-		this.gameBoard = new GameBoard(64);
+		this.gameBoard = new GameBoard(36);
 		this.createdBy;
 		this.stateMode = {
 			open: 1,
